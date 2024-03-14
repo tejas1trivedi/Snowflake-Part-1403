@@ -1,0 +1,7 @@
+snowflake
+pandas
+python
+URLError
+streamlit
+requests
+ydata_profiling
