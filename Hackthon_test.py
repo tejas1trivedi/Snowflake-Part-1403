@@ -223,7 +223,7 @@ if selected == 'Data Browser':
                             df_table_format = df_table_format._append(pd.DataFrame({"COLUMN_NAME":[values],"NULL_COUNT":[null_count]}),ignore_index=True)
                             #st.write(f"Null Count of selected column {values} :", null_count)
                     #st.write("Total count of the file is :",total_count)
-                    s = f"<p style='font-size:26px;'>Total count of the selected file is :{total_count}</p>"
+                    s = f"<p style='font-size:26px;'>Total record count of the selected file :{total_count}</p>"
                     st.markdown(s, unsafe_allow_html=True)
 
                     null_table_caption = f"<p style='font-size:20px;'>Null records count of selected columns:</p>"
@@ -285,19 +285,49 @@ if selected == 'Data Browser':
                 today = datetime.today()
                 selection['LOAD_DATE']=pd.to_datetime(today)
                 selection['LOAD_DATE'] =selection['LOAD_DATE'].dt.strftime("%Y-%m-%d %H:%M:%S")
-                #st.write(selection.dtypes)
-                #st.write(selection)
-                submit_button = st.button('❄️ Ingest Data into Snowflake')
-                if submit_button:
-                    with st.spinner("Making snowflakes..."):
-                        column_names=selection.columns
-                        insert_df=pd.DataFrame(selection, columns=column_names)
-                        session.write_pandas(insert_df, f"{table_name}_STG")  
-                        st.success("Loaded the requested data Successfully")
-            
+
+                dataframe_select['LOAD_DATE']=pd.to_datetime(today)
+                dataframe_select['LOAD_DATE'] =dataframe_select['LOAD_DATE'].dt.strftime("%Y-%m-%d %H:%M:%S")
+        
+                col_button1, col_button2=st.columns(2)
+                with col_button1:
+                    submit_button = st.button('❄️ Ingest Selected rows into Snowflake')
+                    if submit_button:
+                        with st.spinner("Making snowflakes..."):
+                            column_names=selection.columns
+                            insert_df=pd.DataFrame(selection, columns=column_names)
+                            count_records=len(insert_df)
+                            session.write_pandas(insert_df, f"{table_name}_STG")  
+                            st.success(f"{count_records} rows has been Loaded Successfully into {table_name}_STG table ")
+                with col_button2:
+                    submit_button_all = st.button('❄️ Ingest All rows into Snowflake')
+                    if submit_button_all:
+                        with st.spinner("Making snowflakes..."):
+                            column_names=dataframe_select.columns
+                            all_insert_df=pd.DataFrame(dataframe_select,columns=column_names)
+                            count_records=len(dataframe_select)
+                            session.write_pandas(dataframe_select, f"{table_name}_STG")  
+                            st.success(f"{count_records} rows has been Loaded Successfully into {table_name}_STG table ")
 #st.session_state.clicked = False 
 
-        
+#Below code is use for About Us tab
+if selected == 'About Us':
+    _, col2, _ = st.columns([1, 2, 1])
+    with col2:
+        st.header("⚡️Team Saama Thunder")
+    st.write('')
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.image('unnamed.jpg',width = 150)
+        st.write('Tejas Trivedi')
+    with col2:
+        st.image('saama_logo.jpg',width = 150)
+        st.write('Hemchandra Patil')
+    with col3:
+        st.image('saama_logo.jpg',width = 150)
+        st.write('Mahesh Wagdale')
+
+
 
        
 #Footer
