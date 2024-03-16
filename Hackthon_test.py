@@ -109,6 +109,8 @@ if selected == 'Data Browser':
             sql = "LIST @STORE_DB.ATLAS.AWS_S3_STG;"
             df_collect = session.sql(sql).collect()
             df = pd.DataFrame(df_collect)
+            #dropping the column 'mdf' 
+            df = df.drop(['md5'],axis=1)
             #TO display the headers in bold
             st.write(df)
             #st.markdown(df.to_html(escape=False),unsafe_allow_html=True)
@@ -312,20 +314,31 @@ if selected == 'Data Browser':
 
 #Below code is use for About Us tab
 if selected == 'About Us':
-    _, col2, _ = st.columns([1, 2, 1])
-    with col2:
-        st.header("⚡️Team Saama Thunder")
-    st.write('')
-    col1, col2, col3 = st.columns(3)
+    col1,_ = st.columns([2,1])
     with col1:
-        st.image('unnamed.jpg',width = 150)
-        st.write('Tejas Trivedi')
-    with col2:
-        st.image('saama_logo.jpg',width = 150)
-        st.write('Hemchandra Patil')
-    with col3:
-        st.image('saama_logo.jpg',width = 150)
-        st.write('Mahesh Wagdale')
+        st.header("⚡️Team Saama Thunders")
+    st.write('')
+    with st.container(border=True):
+
+        col1, col2, col3 = st.columns([1,1,1])
+        with col1:
+            st.image('Tejas_img.jpg',width = 150)
+            st.write('Tejas Trivedi')
+            st.text('Statisctical Programmer')
+            st.text('8550972858')
+            st.text('tejas.trivedi@saama.com')
+        with col2:
+            st.image('Hemchandra_img.JPG',width = 112)
+            st.write('Hemchandra Patil')
+            st.text('Associate Software Engineer')
+            st.text('9373858259')
+            st.text('hemchandra.patil@saama.com')
+        with col3:
+            st.image('Mahesh_img.jpg',width = 130)
+            st.write('Mahesh Wagdale')
+            st.text('Senior Software Engineer')
+            st.text('9209323426')
+            st.text('mahesh.wagdale@saama.com')
 
 
 

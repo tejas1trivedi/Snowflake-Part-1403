@@ -8,3 +8,4 @@ ydata_profiling
 timedelta
 date
 option_menu
+datetime
