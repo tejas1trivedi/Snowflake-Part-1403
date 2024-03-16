@@ -36,40 +36,55 @@ def create_session():
     return Session.builder.configs(st.secrets["snowflake"]).create()
 session = create_session()
 
-col1, col2,col3 = st.columns((3))
+col1, col2 = st.columns((1,2))
 
 with col1:
     st.image('saama_logo.jpg',width = 150)
 
 with col2:
-    st.header("Saama Thunder's")
-
-with col3:
-    st.header("Hackathon 2024")
+    st.title("👨‍💻Saama Global Hackathon 2024")
 
 #show blue line
 st.markdown("""<hr style="height:2px;border:none;color:#1E96DE;background-color:#1E96DE;" /> """, unsafe_allow_html=True)
 
 if selected == 'Home':
     # Write directly to the app
-    st.title("Simple Data Management Application using Snowflake, Streamlit, SnowPark")
-    subject = "The task involves developing a user-friendly data management application utilizing Snowflake, Streamlit, and Snowpark. Users can select a Snowflake data stage, view files within an Internal/External(S3 bucket) and preview file contents. The app allows users to select specific columns for data profiling, and then select and insert one or more rows of data into a database."
+    _, col2, _ = st.columns([1, 2, 1])
+
+    with col2:
+        st.header("⚡️Team Saama Thunder")
+    # title1, title2 = st.columns((2,1))
+    # with title1:
+    #     st.title("⚡️Team Saama Thunder")
+
+    st.header("Simple Data Management Application using ❄️Snowflake, 🎈Streamlit, ❄SnowPark")
+    #subject = "The task involves developing a user-friendly data management application utilizing Snowflake, Streamlit, and Snowpark. Users can select a Snowflake data stage, view files within an Internal/External(S3 bucket) and preview file contents. The app allows users to select specific columns for data profiling, and then select and insert one or more rows of data into a database."
     st.markdown("""
     <style>
     .big-font {
-        font-size:20px !important;
+        font-size:16px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<p class="big-font">The task involves developing a user-friendly data management application utilizing Snowflake, Streamlit, and Snowpark. Users can select a Snowflake data stage, view files within an Internal/External(S3 bucket) and preview file contents. The app allows users to select specific columns for data profiling, and then select and insert one or more rows of data into a database</p>', unsafe_allow_html=True)
+    st.markdown('<p class="big-font">Our solution involves developing a user-friendly Data Management application that can help preview the data available in your cloud storage and evaluate data quality before taking it ahead for further data processing. The solution is built on Modern Data Platform and utilizes the power of Snowflake features such as  Streamlit and Snowpark.</p>', unsafe_allow_html=True)
+    st.markdown('<p class="big-font">We have used AWS as the cloud environment from where users can select a file from an S3 bucket. This application also allows users to select specific columns for data profiling and then select and insert one or more rows of data into a Snowflake tables. With a bit of Python programming, we have tried to optimize the Snowflake usage and kept it to a minimum to enable less credit usage.</p>', unsafe_allow_html=True)
+
 
 if selected == 'Data Browser':
     bottom_menu_1 = st.columns((4,1,1))
-    with bottom_menu_1[0]:
-        st.button("Help",help="""1. Stage raw files on AWS S3 (preferably structured or semi-structured) using AWS Platform \n 2. Build a Streamlit Data to support the following: \n a) List Snowflake Data Stages and choose a stage\n b) List files on the S3 bucket (show file properties)\n c) Select a File and Preview the contents of the file in a tabular / grid format\n d) Allow the user to choose a column & profile the data (Streamlit <> Python, Pandas), show results\n e) Allow user to select one or more or all rows & ingest the data in a database table (Snowflake > Python Pandas > Ingest)""")
+    with st.expander("User-Guide"):
+        st.write("1. You can preview stage raw files available on AWS S3 (preferably structured or semi-structured) coming from AWS Platform")
+        st.write("2. Our Streamlit Application supports the following :")
+        st.write("  a) List Snowflake Data Stages and choose a stage.")
+        st.write("   b) List files on the S3 bucket (shows file properties)")
+        st.write("   c) Select a File and Preview the contents of the file in a tabular / grid format.")
+        st.write("   d) Allow the user to choose a column & profile the data (Streamlit <> Python, Pandas), show results.")
+        st.write("   e) Allow user to select one or more or all rows & ingest the data in a database table (Snowflake > Python Pandas > Ingest.")
+        #st.button("Help",help="""1. Stage raw files on AWS S3 (preferably structured or semi-structured) using AWS Platform \n 2. Build a Streamlit Data to support the following: \n a) List Snowflake Data Stages and choose a stage\n b) List files on the S3 bucket (show file properties)\n c) Select a File and Preview the contents of the file in a tabular / grid format\n d) Allow the user to choose a column & profile the data (Streamlit <> Python, Pandas), show results\n e) Allow user to select one or more or all rows & ingest the data in a database table (Snowflake > Python Pandas > Ingest)""")
     with st.container(border=True):
-        status = st.radio("Select One Stage: ", ('Internal Satge', 'External Stage(S3)'),index=None)
+        st.write("Please select one of the snowflake stage from the below options :")
+        status = st.radio("Select any one stage : ", ('Internal Satge', 'External Stage(S3)'),index=None)
 
     # conditional statement to print 
     if (status == 'Internal Satge'):
@@ -88,7 +103,9 @@ if selected == 'Data Browser':
     if(status=='External Stage(S3)'):
         #session = get_active_session()
         with st.container(border=True):
-            st.subheader("External Stage Files:")
+            st.subheader("📂External Stage Files:")
+            font_change = f"<p style='font-size:26px;'>Following are the files present in the external stage(S3):</p>"
+            st.markdown(font_change, unsafe_allow_html=True)
             sql = "LIST @STORE_DB.ATLAS.AWS_S3_STG;"
             df_collect = session.sql(sql).collect()
             df = pd.DataFrame(df_collect)
@@ -101,7 +118,7 @@ if selected == 'Data Browser':
 
         sql_filename = "select distinct METADATA$FILENAME from @STORE_DB.ATLAS.AWS_S3_STG"
         df_filename = session.sql(sql_filename).collect()
-        files = st.selectbox("Please select any one file from the below options and press the preview button :",(df_filename), index=None)
+        files = st.selectbox("Please select any one file from the below options and press the preview button :",(df_filename),index=None)
 
         #Write directly to the app
         if 'clicked' not in st.session_state:
@@ -113,7 +130,7 @@ if selected == 'Data Browser':
         st.button('PREVIEW', on_click = click_button)
             
             #Preview code
-        if st.session_state.clicked:
+        if st.session_state.clicked and files:
             # The message and nested widget will remain on the page
             st.write(f"You have selected {files} file and following are the content of the file: ")
             #extract the table name from file name
@@ -122,7 +139,7 @@ if selected == 'Data Browser':
             #sql_pull=f" SELECT $1,$2,$3,$4,$5,$6,$7,$8 FROM @AWS_S3_STG/{files};"
             sql_truncate = f"TRUNCATE TABLE STORE_DB.ATLAS.{table_name};"
             session.sql(sql_truncate).collect()
-            sql_copy = f"COPY INTO STORE_DB.ATLAS.{table_name} FROM @STORE_DB.ATLAS.AWS_S3_STG/{files} FILE_FORMAT=F1"
+            sql_copy = f"COPY INTO STORE_DB.ATLAS.{table_name} FROM @STORE_DB.ATLAS.AWS_S3_STG/{files} FILE_FORMAT=F1 ON_ERROR = CONTINUE"
             session.sql(sql_copy).collect()
             sql_select = f"select * from STORE_DB.ATLAS.{table_name}"
             df_sql_select = session.sql(sql_select).collect()
@@ -131,7 +148,7 @@ if selected == 'Data Browser':
             #st.markdown(dataframe_select.to_html(escape=False),unsafe_allow_html=True)
 
             # Show data
-            #@st.cache_data(show_spinner=False)
+            @st.cache_data(show_spinner=False)
             def split_frame(input_df, rows):
                 df3 = [input_df.loc[i : i + rows - 1, :] for i in range(0, len(input_df), rows)]
                 return df3
@@ -162,11 +179,11 @@ if selected == 'Data Browser':
             st.markdown("""<hr style="height:2px;border:none;color:#1E96DE;background-color:#1E96DE;" /> """, unsafe_allow_html=True)
 
             #Data Profiling
-            st.subheader("Data Profiling")
+            st.subheader("📊Data Profiling")
             with st.expander("Expand to see the data profiling"):
                 #Checkbox
                 #Function to create checkbox
-                st.caption('Please select any columns from the sidebar :')
+                st.caption('Select any columns from the below checkbox to profile the data:')
                 def checkbox_container(data):
                     #select_column_box = st.text_input('Please select any column')
                     cols = st.columns(5)
@@ -178,7 +195,7 @@ if selected == 'Data Browser':
                         for i in data['COLUMN_NAME']:
                             st.session_state['dynamic_checkbox_' + i] = False
                         st.experimental_rerun()
-                    st.caption("Column Names :")
+                    st.caption("The below columns are present in your selected file:")
                     for i in data['COLUMN_NAME']:
                         st.checkbox(i, key='dynamic_checkbox_' + i)
 
@@ -188,13 +205,11 @@ if selected == 'Data Browser':
 
                 checkbox_container(df_columns)
                 new_data = st.text_input('You selected',get_selected_checkboxes())
-                #st.write(get_selected_checkboxes())
 
                 selected_column = get_selected_checkboxes()
 
                 #to preview the data for selected columns
-                #try:
-                if True:
+                try:            
                     appended_data = []
                     df_table_format = pd.DataFrame()
                     for values in selected_column:
@@ -210,7 +225,11 @@ if selected == 'Data Browser':
                     #st.write("Total count of the file is :",total_count)
                     s = f"<p style='font-size:26px;'>Total count of the selected file is :{total_count}</p>"
                     st.markdown(s, unsafe_allow_html=True)
+
+                    null_table_caption = f"<p style='font-size:20px;'>Null records count of selected columns:</p>"
+                    st.markdown(null_table_caption, unsafe_allow_html=True)
                     st.markdown(df_table_format.to_html(escape=False),unsafe_allow_html=True)
+
                     #st.write(df_table_format)
                         #collect_select_sql = session.sql(select_sql).collect()
                         # df_select_sql = pd.DataFrame(collect_select_sql)
@@ -220,10 +239,13 @@ if selected == 'Data Browser':
                     # df2.columns = selected_column
                     #st.write(values)
                     #st.markdown(df2.to_html(escape=False),unsafe_allow_html=True)
-                #except:
-                #    st.write("Please select any one column from the checkbox to profile the data:")
+                except:
+                    st.error("Please select any one column from the checkbox to profile the data:")
 
-                st.caption("Data Profiling Table :")
+                st.write(" ")
+                data_prof_caption = f"<p style='font-size:20px;'>The datailed Data Profiling of the selected file available here :</p>"
+                st.markdown(data_prof_caption, unsafe_allow_html=True)
+                
                 #code to show data profiling
                 desc = dataframe_select.describe(include="all")
                 st.write(desc.transpose())
@@ -281,7 +303,7 @@ if selected == 'Data Browser':
 #Footer
 footer="""<style>
 a:link , a:visited{
-color: #FFFFFF;
+color: #ffffff;
 background-color: transparent;
 text-decoration: underline;
 }
@@ -291,7 +313,7 @@ left: 0;
 bottom: 0;
 width: 100%;
 background-color: #3A3A3A;
-color: black;
+color: white;
 text-align: center;
 }
 </style>
