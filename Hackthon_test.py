@@ -1,4 +1,4 @@
-# Import python packages
+# Import packages
 from snowflake.snowpark import Session
 import pandas as pd
 import requests
@@ -9,15 +9,19 @@ from snowflake.snowpark.context import get_active_session
 from datetime import date, timedelta,datetime
 from streamlit_option_menu import option_menu
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
-
+#Set page size
 st.set_page_config(
-    page_title="Saama's Global Hackthon",
-    page_icon=":wave:",
+    page_title="Saama Global Hackthon 2024",
+    page_icon="👨‍💻",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
+#Create sidebar
 with st.sidebar:
     selected=option_menu(
         menu_title="Main Menu",
@@ -32,10 +36,12 @@ with st.sidebar:
             "nav-link-selected": {"background-color": "#1E96DE"},}
     )
 
+#create session and connect the session with snowflake
 def create_session():
     return Session.builder.configs(st.secrets["snowflake"]).create()
 session = create_session()
 
+#Add 
 col1, col2 = st.columns((1,2))
 
 with col1:
@@ -52,7 +58,7 @@ if selected == 'Home':
     _, col2, _ = st.columns([1, 2, 1])
 
     with col2:
-        st.header("⚡️Team Saama Thunder")
+        st.header("⚡️Team Saama Thunder⚡️")
     # title1, title2 = st.columns((2,1))
     # with title1:
     #     st.title("⚡️Team Saama Thunder")
@@ -87,7 +93,7 @@ if selected == 'Data Browser':
         status = st.radio("Select any one stage : ", ('Internal Satge', 'External Stage(S3)'),index=None)
 
     # conditional statement to print 
-    if (status == 'Internal Satge'):
+    if (status == 'Internal Stage'):
         st.success("You have selected Internal Stage")
     elif (status=='External Stage(S3)'):
         st.success("You have selected External Stage(S3)")
@@ -231,33 +237,55 @@ if selected == 'Data Browser':
                     null_table_caption = f"<p style='font-size:20px;'>Null records count of selected columns:</p>"
                     st.markdown(null_table_caption, unsafe_allow_html=True)
                     st.markdown(df_table_format.to_html(escape=False),unsafe_allow_html=True)
-
-                    #st.write(df_table_format)
-                        #collect_select_sql = session.sql(select_sql).collect()
-                        # df_select_sql = pd.DataFrame(collect_select_sql)
-                        # appended_data.append(df_select_sql)
-                        # st.write(values) 
-                    # df2 = pd.concat(appended_data, axis=1,ignore_index=True)
-                    # df2.columns = selected_column
-                    #st.write(values)
-                    #st.markdown(df2.to_html(escape=False),unsafe_allow_html=True)
                 except:
                     st.error("Please select any one column from the checkbox to profile the data:")
 
                 st.write(" ")
+
+                if table_name == 'SUPERSTORE':
+                    #barchart
+                    barchart1_caption = f"<p style='font-size:20px;'>Bar chart for CITY wise Sales:</p>"
+                    st.markdown(barchart1_caption, unsafe_allow_html=True)
+
+                    barchart2_caption = f"<p style='font-size:15px;'>Identify outliers in the City wise Sales data:</p>"
+                    st.markdown(barchart2_caption, unsafe_allow_html=True)
+
+                    st.bar_chart(
+                    dataframe_select, x='CITY', y='SALES', color="#1E96DE",use_container_width = True  # Optional
+                    )
+
+                    barchart3_caption = f"<p style='font-size:20px;'>Bar chart for CITY wise PROFIT:</p>"
+                    st.markdown(barchart3_caption, unsafe_allow_html=True)
+
+                    barchart4_caption = f"<p style='font-size:15px;'>Identify outliers in the City wise Profit data:</p>"
+                    st.markdown(barchart4_caption, unsafe_allow_html=True)
+
+                    st.bar_chart(
+                    dataframe_select, x='CITY', y='PROFIT', color="#00FF00",use_container_width = True  # Optional
+                    )
+
+                    barchart5_caption = f"<p style='font-size:20px;'>Bar chart for Region wise Sales:</p>"
+                    st.markdown(barchart5_caption, unsafe_allow_html=True)
+
+                    barchart6_caption = f"<p style='font-size:15px;'>Identify outliers in the south region:</p>"
+                    st.markdown(barchart6_caption, unsafe_allow_html=True)
+
+                    st.bar_chart(
+                    dataframe_select, x='REGION', y='SALES', color="#1E96DE",use_container_width = True  # Optional
+                    )
+
+                #Divider
+                st.markdown("""<hr style="height:2px;border:none;color:#1E96DE;background-color:#1E96DE;" /> """, unsafe_allow_html=True)
+                #code to show data profiling
                 data_prof_caption = f"<p style='font-size:20px;'>The datailed Data Profiling of the selected file available here :</p>"
                 st.markdown(data_prof_caption, unsafe_allow_html=True)
-                
-                #code to show data profiling
+
                 desc = dataframe_select.describe(include="all")
                 st.write(desc.transpose())
 
-                # df4 = pd.DataFrame(df2)
-                # st.write(df4.describe(include=all))
-
             st.markdown("""<hr style="height:2px;border:none;color:#1E96DE;background-color:#1E96DE;" /> """, unsafe_allow_html=True)
 
-            st.subheader("Data Ingestion :")
+            st.subheader("💾Data Ingestion :")
             #edited_df = st.data_editor(dataframe_select)
 
             #Data Ingestion into snowflake based on user selection
@@ -271,8 +299,7 @@ if selected == 'Data Browser':
                     edited_df = st.data_editor(
                         df_with_selections,
                         hide_index=True,
-                        column_config={"Select": st.column_config.CheckboxColumn(required=True)},
-                        disabled=dataset.columns,
+                        column_config={"Select": st.column_config.CheckboxColumn(required=True)}
                     )
 
                     # Filter the dataframe using the temporary column, then drop the column
@@ -310,7 +337,8 @@ if selected == 'Data Browser':
                             count_records=len(dataframe_select)
                             session.write_pandas(dataframe_select, f"{table_name}_STG")  
                             st.success(f"{count_records} rows has been Loaded Successfully into {table_name}_STG table ")
-#st.session_state.clicked = False 
+
+            
 
 #Below code is use for About Us tab
 if selected == 'About Us':
@@ -324,25 +352,25 @@ if selected == 'About Us':
         with col1:
             st.image('Tejas_img.jpg',width = 150)
             st.write('Tejas Trivedi')
-            st.text('Statisctical Programmer')
+            st.text('Statistical Programmer')
+            st.text('SAM BPAAS')
             st.text('8550972858')
             st.text('tejas.trivedi@saama.com')
         with col2:
-            st.image('Hemchandra_img.JPG',width = 112)
+            st.image('Hemchandra_img (2).JPG',width = 112)
             st.write('Hemchandra Patil')
             st.text('Associate Software Engineer')
+            st.text('PCYC')
             st.text('9373858259')
             st.text('hemchandra.patil@saama.com')
         with col3:
             st.image('Mahesh_img.jpg',width = 130)
             st.write('Mahesh Wagdale')
             st.text('Senior Software Engineer')
+            st.text('PCYC')
             st.text('9209323426')
             st.text('mahesh.wagdale@saama.com')
-
-
-
-       
+     
 #Footer
 footer="""<style>
 a:link , a:visited{
